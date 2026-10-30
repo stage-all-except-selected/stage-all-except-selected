@@ -1,4 +1,4 @@
-package io.github.yendrrek.stageotherfiles
+package io.stageallexceptselected
 
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -13,12 +13,12 @@ import git4idea.index.ui.NodeKind
 import java.util.EnumSet
 
 /**
- * Stages every unstaged file in the staging area except the selected ones.
+ * Stages every modified or unversioned file in the staging area except the selected ones.
  *
  * Only the staging tree provides [GitStageDataKeys.GIT_FILE_STATUS_NODES], so the action stays
  * hidden everywhere else, including when the staging area is off.
  */
-class StageOtherFilesAction : DumbAwareAction() {
+class StageAllExceptSelectedAction : DumbAwareAction() {
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 

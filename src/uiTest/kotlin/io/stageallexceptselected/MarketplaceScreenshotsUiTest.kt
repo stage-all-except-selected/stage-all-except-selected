@@ -1,4 +1,4 @@
-package io.github.yendrrek.stageotherfiles
+package io.stageallexceptselected
 
 import com.intellij.remoterobot.utils.waitFor
 import org.junit.Assume.assumeTrue
@@ -9,7 +9,7 @@ import java.time.Duration
 
 /**
  * Captures the JetBrains Marketplace screenshots in the Islands Light and Islands Dark themes: the
- * context menu with **Stage Other Files** under the pointer, and the staging area after it ran.
+ * context menu with **Stage All Except Selected** under the pointer, and the staging area after it ran.
  *
  * Runs only with `-PuiTestScreenshotDir=<dir>`, against `runIdeForUiTestsLatest -PuiTestUiScale=2`
  * on a 2880x1800 Xvfb screen. Each image is the frame below its main toolbar, 1280 x 800 logical
@@ -73,7 +73,7 @@ class MarketplaceScreenshotsUiTest {
     }
 
     private companion object {
-        const val ITEM = "Stage Other Files"
+        const val ITEM = "Stage All Except Selected"
         const val WIDTH = 1280
         const val HEIGHT = 800
 

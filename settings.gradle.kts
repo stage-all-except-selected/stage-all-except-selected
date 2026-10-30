@@ -7,7 +7,7 @@ plugins {
     id("org.jetbrains.intellij.platform.settings") version "2.19.0"
 }
 
-rootProject.name = "stage-other-files"
+rootProject.name = "stage-all-except-selected"
 
 @Suppress("UnstableApiUsage")
 dependencyResolutionManagement {

@@ -1,4 +1,4 @@
-package io.github.yendrrek.stageotherfiles
+package io.stageallexceptselected
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -187,7 +187,7 @@ class PlatformDefaultArgumentCallsTest {
     }
 
     private companion object {
-        const val PACKAGE_ROOT = "io/github/yendrrek/stageotherfiles" // the plugin's root package, slash-separated
+        const val PACKAGE_ROOT = "io/stageallexceptselected" // the plugin's root package, slash-separated
         const val PLATFORM_PACKAGE = "com/intellij/"
         const val GIT4IDEA_PACKAGE = "git4idea/"
         val UNSTABLE_SEGMENTS = listOf("/impl/", "/internal/", "/ex/")

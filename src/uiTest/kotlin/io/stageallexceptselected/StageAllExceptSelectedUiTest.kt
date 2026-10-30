@@ -1,4 +1,4 @@
-package io.github.yendrrek.stageotherfiles
+package io.stageallexceptselected
 
 import com.intellij.remoterobot.fixtures.JTreeFixture
 import com.intellij.remoterobot.search.locators.byXpath
@@ -14,7 +14,7 @@ import java.time.Duration
  * The plan's manual checks, end to end: files are changed with the `git` CLI, the staging area is
  * driven with real clicks, and the result is read back from `git status` and from the panel.
  */
-class StageOtherFilesUiTest {
+class StageAllExceptSelectedUiTest {
 
     @get:Rule
     val sandbox = SandboxIdeRule()
@@ -226,7 +226,7 @@ class StageOtherFilesUiTest {
     }
 
     private companion object {
-        const val ITEM = "Stage Other Files"
+        const val ITEM = "Stage All Except Selected"
         const val STAGED = "Staged"
         const val UNSTAGED = "Unstaged"
     }

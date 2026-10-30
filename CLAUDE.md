@@ -1,7 +1,7 @@
-# Stage Other Files
+# Stage All Except Selected
 
-IntelliJ Platform plugin, written in Kotlin, that adds **Stage Other Files** to the Git staging
-area's context menu. It compiles against IntelliJ IDEA Community 2024.2.6 (build 242) and must run
+IntelliJ Platform plugin, written in Kotlin, that adds **Stage All Except Selected** to the Git
+staging area's context menu. It compiles against IntelliJ IDEA Community 2024.2.6 (build 242) and must run
 unchanged on every newer IDE.
 
 ## Commands

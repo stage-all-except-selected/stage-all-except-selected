@@ -1,4 +1,4 @@
-package io.github.yendrrek.stageotherfiles
+package io.stageallexceptselected
 
 import com.intellij.openapi.vcs.FilePath
 import com.intellij.openapi.vcs.LocalFilePath

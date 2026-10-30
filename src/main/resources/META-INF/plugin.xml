@@ -1,8 +1,8 @@
 <idea-plugin>
   <!-- Permanent once uploaded to JetBrains Marketplace: the listing and every update are keyed to it. -->
-  <id>io.github.yendrrek.stageotherfiles</id>
-  <name>Stage Other Files</name>
-  <vendor email="yendrrek@protonmail.com" url="https://github.com/yendrrek">Andrzej Piontek</vendor>
+  <id>io.stageallexceptselected</id>
+  <name>Stage All Except Selected</name>
+  <vendor email="yendrrek@protonmail.com" url="https://github.com/stage-all-except-selected">Andrzej Piontek</vendor>
 
   <description><![CDATA[
     <p>
@@ -10,8 +10,8 @@
       <b>Settings | Version Control | Git | Enable staging area</b>.
     </p>
     <p>
-      Right-click one or more files in the staging area and choose <b>Stage Other Files</b> to stage
-      every other modified or unversioned file. The selected files stay unstaged.
+      Right-click one or more files in the staging area and choose <b>Stage All Except Selected</b>
+      to stage every other modified or unversioned file. The selected files stay unstaged.
     </p>
     <ul>
       <li>Selecting a folder keeps every file under it unstaged.</li>
@@ -20,17 +20,20 @@
       <li>Conflicted and ignored files are never staged.</li>
       <li>Files are staged in every Git repository shown in the staging area.</li>
     </ul>
-    <p>Free and open source under the MIT License.</p>
+    <p>
+      Free and open source under the MIT License. Source code and the issue tracker are on
+      <a href="https://github.com/stage-all-except-selected/stage-all-except-selected">GitHub</a>.
+    </p>
   ]]></description>
 
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.vcs</depends>
   <depends>Git4Idea</depends>
 
-  <resource-bundle>messages.StageOtherFilesBundle</resource-bundle>
+  <resource-bundle>messages.StageAllExceptSelectedBundle</resource-bundle>
 
   <actions>
-    <action id="StageOtherFiles.Stage" class="io.github.yendrrek.stageotherfiles.StageOtherFilesAction">
+    <action id="StageAllExceptSelected.Stage" class="io.stageallexceptselected.StageAllExceptSelectedAction">
       <add-to-group group-id="Git.Stage.Tree.Menu" anchor="after" relative-to-action="Git.Stage.Add"/>
     </action>
   </actions>

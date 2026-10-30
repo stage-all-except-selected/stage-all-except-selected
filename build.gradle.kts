@@ -93,6 +93,7 @@ kotlin {
 
 changelog {
     version = providers.gradleProperty("pluginVersion")
+    repositoryUrl = "https://github.com/stage-all-except-selected/stage-all-except-selected"
 }
 
 intellijPlatform {
@@ -236,7 +237,7 @@ val prepareUiTestProject = tasks.register("prepareUiTestProject") {
 
 // Internal platform API this plugin may call. Keep it empty: an entry is a decision to ship an API
 // the Marketplace may refuse, made in review with the reasoning written down, never to turn a build
-// green. Format: "com.example.PlatformClass.member used by io.github.yendrrek.stageotherfiles.Caller".
+// green. Format: "com.example.PlatformClass.member used by io.stageallexceptselected.Caller".
 val acceptedInternalApiUsages = emptySet<String>()
 
 /**

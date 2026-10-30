@@ -1,4 +1,4 @@
-package io.github.yendrrek.stageotherfiles
+package io.stageallexceptselected
 
 import com.intellij.remoterobot.RemoteRobot
 import com.intellij.remoterobot.fixtures.ComponentFixture

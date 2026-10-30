@@ -1,4 +1,4 @@
-package io.github.yendrrek.stageotherfiles
+package io.stageallexceptselected
 
 import com.intellij.remoterobot.utils.waitFor
 import org.junit.Assert.assertTrue
@@ -17,7 +17,7 @@ class PluginUnloadUiTest {
 
     @Test
     fun `the plugin unloads without a restart and loads back`() {
-        stageOtherFiles()
+        stageAllExceptSelected()
 
         var unloaded = false
         try {
@@ -33,11 +33,11 @@ class PluginUnloadUiTest {
             if (unloaded) assertTrue("the plugin did not load back", sandbox.ide.reloadPlugin())
         }
 
-        stageOtherFiles()
+        stageAllExceptSelected()
     }
 
     /** Uses the action end to end, so the unload runs after the plugin's code has run. */
-    private fun stageOtherFiles() {
+    private fun stageAllExceptSelected() {
         sandbox.root.reset()
         sandbox.root.commit("a.txt" to "original\n", "b.txt" to "original\n")
         sandbox.root.write("a.txt", "changed\n")
@@ -45,7 +45,7 @@ class PluginUnloadUiTest {
         sandbox.awaitPanelMatchesGit()
 
         sandbox.panel.select("Unstaged", "a.txt")
-        sandbox.panel.rightClick("Unstaged", "a.txt").click("Stage Other Files")
+        sandbox.panel.rightClick("Unstaged", "a.txt").click("Stage All Except Selected")
 
         val expected = mapOf("a.txt" to " M", "b.txt" to "M ")
         waitFor(Duration.ofSeconds(30), Duration.ofMillis(500), errorMessageSupplier = { "git status is ${sandbox.root.status()}" }) {

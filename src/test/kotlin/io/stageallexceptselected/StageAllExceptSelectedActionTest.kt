@@ -1,4 +1,4 @@
-package io.github.yendrrek.stageotherfiles
+package io.stageallexceptselected
 
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -16,19 +16,19 @@ import git4idea.index.ui.GitStageDataKeys
 import git4idea.index.ui.NodeKind
 
 /**
- * Registration and presentation of [StageOtherFilesAction]. The light fixture has no Git
+ * Registration and presentation of [StageAllExceptSelectedAction]. The light fixture has no Git
  * repository, so the stage tracker's state is empty and nothing is ever staged here.
  */
-class StageOtherFilesActionTest : BasePlatformTestCase() {
+class StageAllExceptSelectedActionTest : BasePlatformTestCase() {
 
     private val root = LightVirtualFile("repo")
 
     fun `test the action is registered with its bundle text`() {
         val action = ActionManager.getInstance().getAction(ACTION_ID)
 
-        assertInstanceOf(action, StageOtherFilesAction::class.java)
-        assertEquals("Stage Other Files", action.templatePresentation.text)
-        assertEquals("Stage every unstaged file except the selected ones", action.templatePresentation.description)
+        assertInstanceOf(action, StageAllExceptSelectedAction::class.java)
+        assertEquals("Stage All Except Selected", action.templatePresentation.text)
+        assertEquals("Stage every modified or unversioned file except the selected ones", action.templatePresentation.description)
     }
 
     fun `test the action follows Stage in the staging tree's context menu`() {
@@ -71,7 +71,7 @@ class StageOtherFilesActionTest : BasePlatformTestCase() {
     }
 
     private fun update(context: DataContext): AnActionEvent {
-        val action = StageOtherFilesAction()
+        val action = StageAllExceptSelectedAction()
         val event = TestActionEvent.createTestEvent(action, context)
         action.update(event)
         return event
@@ -89,6 +89,6 @@ class StageOtherFilesActionTest : BasePlatformTestCase() {
     private fun node(status: GitFileStatus, kind: NodeKind) = GitFileStatusNode(root, status, kind)
 
     private companion object {
-        const val ACTION_ID = "StageOtherFiles.Stage"
+        const val ACTION_ID = "StageAllExceptSelected.Stage"
     }
 }

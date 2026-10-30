@@ -1,4 +1,4 @@
-package io.github.yendrrek.stageotherfiles
+package io.stageallexceptselected
 
 import com.intellij.remoterobot.RemoteRobot
 
@@ -292,8 +292,8 @@ class SandboxIde(private val robot: RemoteRobot) {
     private fun String.escapeJs(): String = replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n")
 
     private companion object {
-        const val PLUGIN_ID = "io.github.yendrrek.stageotherfiles"
-        const val ACTION_ID = "StageOtherFiles.Stage"
+        const val PLUGIN_ID = "io.stageallexceptselected"
+        const val ACTION_ID = "StageAllExceptSelected.Stage"
         const val DESCRIPTOR_KEY = "uiTest.unloadedDescriptor"
 
         /** JavaScript expression: the y of the main toolbar's bottom edge within `frame`. */

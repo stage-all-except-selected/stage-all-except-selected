@@ -1,4 +1,4 @@
-package io.github.yendrrek.stageotherfiles
+package io.stageallexceptselected
 
 import com.intellij.remoterobot.RemoteRobot
 import com.intellij.remoterobot.utils.Keyboard
@@ -105,7 +105,7 @@ class SandboxIdeRule : TestRule {
                 .filter { entry -> entry.contains(" SEVERE - ") || entry.contains(" ERROR - ") }
                 .filter { entry ->
                     entry.lines().filterNot { "Last Action:" in it }.any {
-                        "io.github.yendrrek.stageotherfiles" in it || "Plugin to blame: Stage Other Files" in it
+                        "io.stageallexceptselected" in it || "Plugin to blame: Stage All Except Selected" in it
                     }
                 }
     }

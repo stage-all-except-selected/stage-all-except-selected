@@ -1,11 +1,11 @@
-# Stage Other Files
+# Stage All Except Selected
 
-JetBrains IDE plugin that stages every unstaged file except the ones you select in the Git staging
-area.
+JetBrains IDE plugin that stages every modified or unversioned file except the ones you select in
+the Git staging area.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="marketplace/screenshots/context-menu-dark.png">
-  <img alt="Stage Other Files in the staging area's context menu" src="marketplace/screenshots/context-menu-light.png">
+  <img alt="Stage All Except Selected in the staging area's context menu" src="marketplace/screenshots/context-menu-light.png">
 </picture>
 
 ## Use
@@ -13,7 +13,7 @@ area.
 1. Enable the staging area, which is off by default: **Settings | Version Control | Git | Enable
    staging area**.
 2. In the **Commit** tool window, select one or more unstaged files or folders.
-3. Right-click and choose **Stage Other Files**, directly below **Stage**.
+3. Right-click and choose **Stage All Except Selected**, directly below **Stage**.
 
 Every other modified or unversioned file, in every Git repository of the project, is staged, as
 **Stage All** would. The selected files stay unstaged, including the unstaged changes of a partially
