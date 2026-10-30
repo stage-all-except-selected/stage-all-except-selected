@@ -2,6 +2,7 @@ import org.jetbrains.changelog.Changelog
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
+import org.jetbrains.intellij.platform.gradle.tasks.RunIdeTask
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -20,6 +21,24 @@ plugins {
 group = providers.gradleProperty("pluginGroup").get()
 val pluginVersion = providers.gradleProperty("pluginVersion").get()
 version = pluginVersion
+
+// Client (uiTestImplementation) and server (robotServerPlugin) must be the same version.
+val remoteRobotVersion = "0.11.23"
+
+// The throwaway project the UI-test IDE opens: two Git roots, rebuilt on every launch.
+val uiTestProjectDir = layout.buildDirectory.dir("ui-test-project")
+
+sourceSets {
+    // Slow, needs a live IDE started separately; never part of `./gradlew test`.
+    create("uiTest")
+}
+
+val uiTestImplementation by configurations.getting {
+    extendsFrom(configurations.testImplementation.get())
+}
+configurations.getByName("uiTestRuntimeOnly") {
+    extendsFrom(configurations.testRuntimeOnly.get())
+}
 
 // The releases the Plugin Verifier checks. pluginVerification.ides.select{} and
 // printProductsReleases both read these, so CI's per-IDE matrix is the list a local verifyPlugin uses.
@@ -47,6 +66,15 @@ dependencies {
     // The platform test framework is built on JUnit 4 and throws opentest4j assertion errors.
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.opentest4j:opentest4j:1.3.0")
+
+    // kotlin.stdlib.default.dependency=false removes the stdlib everywhere; uiTest does not get the
+    // platform's copy, so it needs its own.
+    uiTestImplementation(kotlin("stdlib"))
+    uiTestImplementation("com.intellij.remoterobot:remote-robot:$remoteRobotVersion")
+    uiTestImplementation("com.intellij.remoterobot:remote-fixtures:$remoteRobotVersion")
+    // RemoteRobot's constructor takes an OkHttpClient, which remote-robot only puts on the runtime
+    // classpath. Same version as remote-robot's own dependency.
+    uiTestImplementation("com.squareup.okhttp3:okhttp:3.14.9")
 }
 
 kotlin {
@@ -143,6 +171,57 @@ tasks {
             listOf("-Didea.is.internal=true")
         }
     }
+
+    // Start `runIdeForUiTests` in the background first, then run this against it.
+    register<Test>("uiTest") {
+        description = "Runs remote-robot UI tests against a `runIdeForUiTests` IDE started separately."
+        group = "verification"
+        testClassesDirs = sourceSets["uiTest"].output.classesDirs
+        classpath = sourceSets["uiTest"].runtimeClasspath
+        systemProperty("uiTest.projectDir", uiTestProjectDir.get().asFile.absolutePath)
+        // Reruns against whatever state the running IDE is in; there is no meaningful up-to-date.
+        outputs.upToDateWhen { false }
+        // remote-robot's Gson parsing reflects into Throwable; without this every failure surfaces
+        // as an opaque IllegalArgumentException.
+        jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
+    }
+}
+
+/**
+ * Rebuilds the UI-test project from `src/uiTest/fixture-project`: a Git repository at the project
+ * root and a second one in `second/`, both mapped in `.idea/vcs.xml`. The tests reset the working
+ * trees themselves; the repositories only need to exist before the IDE opens the project.
+ */
+val prepareUiTestProject = tasks.register("prepareUiTestProject") {
+    description = "Creates the two-repository project the UI-test IDE opens."
+    group = "verification"
+
+    val template = layout.projectDirectory.dir("src/uiTest/fixture-project").asFile
+    val target = uiTestProjectDir.map { it.asFile }
+    inputs.dir(template)
+    outputs.upToDateWhen { false }
+
+    doLast {
+        fun git(directory: File, vararg args: String) {
+            val process = ProcessBuilder("git", *args).directory(directory).redirectErrorStream(true).start()
+            val output = process.inputStream.bufferedReader().readText()
+            check(process.waitFor() == 0) { "git ${args.joinToString(" ")} failed in $directory:\n$output" }
+        }
+
+        val projectDir = target.get()
+        projectDir.deleteRecursively()
+        template.copyRecursively(projectDir)
+        for (root in listOf(projectDir, projectDir.resolve("second"))) {
+            root.mkdirs()
+            git(root, "init", "--quiet", "--initial-branch=main")
+            git(root, "config", "user.name", "UI Test")
+            git(root, "config", "user.email", "ui-test@example.com")
+            git(root, "config", "commit.gpgsign", "false")
+            git(root, "commit", "--quiet", "--allow-empty", "--message=Initial commit")
+        }
+        // The IDE's own files and the nested repository are not part of the root repository.
+        projectDir.resolve(".git/info/exclude").appendText("/.idea/\n/ui-test-project.iml\n/second/\n")
+    }
 }
 
 // Internal platform API this plugin may call. Keep it empty: an entry is a decision to ship an API
@@ -238,4 +317,70 @@ val verifyInternalApiAllowlist = tasks.register("verifyInternalApiAllowlist") {
 
 tasks.named("verifyPlugin") {
     finalizedBy(verifyInternalApiAllowlist)
+}
+
+intellijPlatformTesting {
+    runIde {
+        val uiTestIdeArgs = listOf(
+            "-Drobot-server.port=8082",
+            // No first-run walls for the robot to get stuck behind.
+            "-Djb.privacy.policy.text=<!--999.999-->",
+            "-Djb.consents.confirmation.enabled=false",
+            "-Didea.trust.all.projects=true",
+            "-Dide.show.tips.on.startup.default.value=false",
+            "-Didea.is.internal=true",
+            // Overrides the -Didea.required.plugins.id=<this plugin> IPGP adds. From 2026.2 that
+            // property makes the platform refuse to unload the plugin, so an unload test cannot do
+            // what a user's Disable does.
+            "-Didea.required.plugins.id=com.jetbrains.test.robot-server-plugin",
+            // macOS native chrome remote-robot cannot see or drive.
+            "-DjbScreenMenuBar.enabled=false",
+            "-Dapple.laf.useScreenMenuBar=false",
+            "-Dide.mac.file.chooser.native=false",
+        )
+
+        fun RunIdeTask.configureForUiTests() {
+            dependsOn(prepareUiTestProject)
+            args(uiTestProjectDir.get().asFile.absolutePath)
+            jvmArgumentProviders += CommandLineArgumentProvider { uiTestIdeArgs }
+            // java.awt.Robot cannot reach a native Wayland window. An empty WAYLAND_DISPLAY makes
+            // the JBR resolve awt.toolkit.name=auto to X11 and open the IDE on DISPLAY. Unsetting it
+            // is not enough: the JBR then falls back to $XDG_RUNTIME_DIR/wayland-0.
+            environment("WAYLAND_DISPLAY", "")
+            // Read through a provider so a changed DISPLAY invalidates the configuration cache: the
+            // environment a task inherits is a snapshot from whichever build configured it.
+            environment("DISPLAY", providers.environmentVariable("DISPLAY").getOrElse(""))
+        }
+
+        register("runIdeForUiTests") {
+            task { configureForUiTests() }
+            plugins {
+                robotServerPlugin(remoteRobotVersion)
+            }
+        }
+
+        // The same sandbox on an INSTALLED newest IDE, since platform behaviour moves under the
+        // plugin. Installed rather than downloaded: Gradle 9 holds the download cache immutable,
+        // and an IDE that starts JCEF writes into its own install directory, which breaks the next
+        // launch. The path is machine-specific, so it lives in ~/.gradle/gradle.properties.
+        // Only one sandbox can run at a time: both listen on :8082.
+        register("runIdeForUiTestsLatest") {
+            localPath = layout.dir(
+                providers.gradleProperty("uiTestLatestIdePath")
+                    .orElse(
+                        provider {
+                            throw GradleException(
+                                "runIdeForUiTestsLatest needs uiTestLatestIdePath in ~/.gradle/gradle.properties: " +
+                                    "the directory of an installed IntelliJ IDEA, e.g. a Toolbox app directory.",
+                            )
+                        },
+                    )
+                    .map { file(it) },
+            )
+            task { configureForUiTests() }
+            plugins {
+                robotServerPlugin(remoteRobotVersion)
+            }
+        }
+    }
 }

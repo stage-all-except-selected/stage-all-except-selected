@@ -8,13 +8,33 @@ unchanged on every newer IDE.
 
 | Command | Does |
 |---|---|
-| `./gradlew build` | Compiles, runs unit tests, builds the plugin zip |
+| `./gradlew build` | Compiles and runs the unit tests |
+| `./gradlew buildPlugin` | Plugin zip in `build/distributions/` |
 | `./gradlew test` | Unit and light platform tests only |
 | `./gradlew verifyPluginProjectConfiguration` | Checks the descriptor and build setup |
 | `./gradlew verifyPlugin -PverifyIde=<version>` | Plugin Verifier against one IDE; versions from `./gradlew printProductsReleases` without the `IU-` prefix |
 | `./gradlew runIde` | Sandbox IDE with the plugin installed |
 
 An unfiltered `./gradlew verifyPlugin` downloads every IDE in the range, about 45–50 GB.
+
+## Run the UI tests
+
+`src/uiTest` drives a sandbox IDE through remote-robot: it changes files with the `git` CLI, clicks
+through the staging area and checks the result with `git status`. Each launch rebuilds
+`build/ui-test-project`, a project with a Git repository at its root and another in `second/`.
+
+```bash
+Xvfb :99 -screen 0 1920x1080x24 &
+DISPLAY=:99 ./gradlew runIdeForUiTests &   # IntelliJ IDEA 2024.2.6, robot-server on :8082
+./gradlew uiTest
+```
+
+- `runIdeForUiTestsLatest` runs the same sandbox on the installed IDE named by `uiTestLatestIdePath`
+  in `~/.gradle/gradle.properties`. Only one sandbox can run at a time.
+- Use Xvfb on a Wayland desktop: robot input cannot reach a Wayland window. Both sandboxes set an
+  empty `WAYLAND_DISPLAY` so the JBR picks X11 and opens on `DISPLAY`.
+- A failing test saves a screenshot to `build/reports/uiTest/<test>.png`. A test also fails when the
+  plugin logs an error to `idea.log`.
 
 ## Compatibility rules
 
