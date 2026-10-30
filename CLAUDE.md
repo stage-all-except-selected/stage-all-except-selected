@@ -20,8 +20,10 @@ An unfiltered `./gradlew verifyPlugin` downloads every IDE in the range, about 4
 
 - Compile against the oldest supported IDE (`platformVersion` in `gradle.properties`). Keep
   `sinceBuild` set and `untilBuild` unset.
-- Kotlin `apiVersion` and `languageVersion` stay at 2.0, the Kotlin bundled with 242.
-  `kotlin.stdlib.default.dependency = false` keeps the stdlib out of the plugin.
+- Kotlin `apiVersion` and `languageVersion` stay at 1.9: IntelliJ IDEA 2024.2.6 bundles Kotlin
+  stdlib 1.9.24. Kotlin 2.3 is the last compiler that accepts 1.9, so the Kotlin Gradle plugin stays
+  on 2.3.x until `pluginSinceBuild` is raised. `kotlin.stdlib.default.dependency = false` keeps the
+  stdlib out of the plugin.
 - Never omit a defaulted argument when calling a `com.intellij` or `git4idea` Kotlin function or
   constructor, for example `GitFileStatus(index, workTree, path, origPath)`. The synthetic
   `$default` member it compiles to changes shape between IDE versions and throws

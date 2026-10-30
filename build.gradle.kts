@@ -10,7 +10,9 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 // Look up the current release of each plugin and library below before raising it.
 // org.jetbrains.intellij.platform takes its version from the settings plugin in settings.gradle.kts.
 plugins {
-    kotlin("jvm") version "2.4.21"
+    // 2.3 is the last Kotlin compiler that accepts API and language version 1.9 (see below), so stay
+    // on 2.3.x until pluginSinceBuild is raised.
+    kotlin("jvm") version "2.3.21"
     id("org.jetbrains.intellij.platform")
     id("org.jetbrains.changelog") version "2.5.0"
 }
@@ -47,10 +49,10 @@ kotlin {
     jvmToolchain(21)
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_21)
-        // The Kotlin bundled with the OLDEST supported IDE (242 ships 2.0). A newer API level
-        // compiles fine and throws NoSuchMethodError on that IDE.
-        apiVersion.set(KotlinVersion.KOTLIN_2_0)
-        languageVersion.set(KotlinVersion.KOTLIN_2_0)
+        // The Kotlin stdlib bundled with the OLDEST supported IDE: 2024.2.6 ships 1.9.24. A newer
+        // API level compiles fine and throws NoSuchMethodError on that IDE.
+        apiVersion.set(KotlinVersion.KOTLIN_1_9)
+        languageVersion.set(KotlinVersion.KOTLIN_1_9)
         // Silences only the deprecation warning for the pinned version above.
         freeCompilerArgs.add("-Xsuppress-version-warnings")
         jvmDefault.set(JvmDefaultMode.NO_COMPATIBILITY)
