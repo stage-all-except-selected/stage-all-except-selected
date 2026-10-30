@@ -11,8 +11,8 @@ area.
 3. Right-click and choose **Stage Other Files**, directly below **Stage**.
 
 Every other modified tracked file, in every Git repository of the project, is staged. The selected
-files stay unstaged, including the unstaged changes of a partially staged file. Unversioned and
-conflicted files are never staged.
+files stay unstaged, including the unstaged changes of a partially staged file. Unversioned files,
+listed in red under Unstaged, and conflicted files are never staged.
 
 Works in IntelliJ IDEA 2024.2 and later, and in every other IntelliJ-based IDE that bundles Git.
 
@@ -25,3 +25,7 @@ Requires JDK 21; Gradle downloads it if none is installed.
 ./gradlew buildPlugin   # plugin zip in build/distributions/
 ./gradlew runIde        # sandbox IDE with the plugin installed
 ```
+
+## Licence
+
+[MIT](LICENSE)

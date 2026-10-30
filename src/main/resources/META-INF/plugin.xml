@@ -2,7 +2,7 @@
   <!-- Permanent once uploaded to JetBrains Marketplace: the listing and every update are keyed to it. -->
   <id>io.github.yendrrek.stageotherfiles</id>
   <name>Stage Other Files</name>
-  <vendor url="https://github.com/yendrrek">yendrrek</vendor>
+  <vendor email="yendrrek@protonmail.com" url="https://github.com/yendrrek">Andrzej Piontek</vendor>
 
   <description><![CDATA[
     <p>
@@ -16,9 +16,10 @@
     <ul>
       <li>Selecting a folder keeps every file under it unstaged.</li>
       <li>A partially staged file whose unstaged entry is selected keeps its unstaged changes.</li>
-      <li>Unversioned and conflicted files are never staged.</li>
+      <li>Unversioned files, listed in red under Unstaged, and conflicted files are never staged.</li>
       <li>Files are staged in every Git repository shown in the staging area.</li>
     </ul>
+    <p>Free and open source under the MIT License.</p>
   ]]></description>
 
   <depends>com.intellij.modules.platform</depends>
