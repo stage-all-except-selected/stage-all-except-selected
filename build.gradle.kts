@@ -160,6 +160,12 @@ intellijPlatform {
 }
 
 tasks {
+    // IPGP builds this path by hand, so Gradle sees no dependency on signPlugin and refuses to run
+    // both in one build. Taking it from signPlugin's output declares the dependency.
+    verifyPluginSignature {
+        inputArchiveFile = signPlugin.flatMap { it.signedArchiveFile }
+    }
+
     // One release per line; a CI verify matrix is built from this.
     printProductsReleases {
         types = listOf(verifiedIdeType)

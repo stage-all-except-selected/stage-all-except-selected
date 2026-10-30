@@ -52,6 +52,20 @@ DISPLAY=:99 ./gradlew runIdeForUiTestsLatest -PuiTestUiScale=2 &
 Each image is the frame below the main toolbar, which leaves out the free tier's "Unlock Ultimate"
 button; toolbar customisation does not remove it.
 
+## Sign the plugin
+
+`signPlugin` and `verifyPluginSignature` read `CERTIFICATE_CHAIN`, `PRIVATE_KEY` and
+`PRIVATE_KEY_PASSWORD` from the environment, never from a file in the repository. Without them
+`signPlugin` skips itself and reports success. Create the key and certificate once and keep them in a
+password manager:
+
+```bash
+openssl genpkey -aes-256-cbc -algorithm RSA -out private_encrypted.pem -pkeyopt rsa_keygen_bits:4096
+openssl req -key private_encrypted.pem -new -x509 -days 3650 -out chain.crt
+CERTIFICATE_CHAIN="$(cat chain.crt)" PRIVATE_KEY="$(cat private_encrypted.pem)" \
+  PRIVATE_KEY_PASSWORD=... ./gradlew verifyPluginSignature   # signs, then verifies
+```
+
 ## Compatibility rules
 
 - Compile against the oldest supported IDE (`platformVersion` in `gradle.properties`). Keep
