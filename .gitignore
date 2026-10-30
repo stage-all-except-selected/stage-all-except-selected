@@ -1,1 +1,7 @@
 /docs/
+.DS_Store
+.gradle
+.idea
+.intellijPlatform
+.kotlin
+build
