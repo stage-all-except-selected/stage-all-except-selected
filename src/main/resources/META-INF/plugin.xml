@@ -24,4 +24,12 @@
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.vcs</depends>
   <depends>Git4Idea</depends>
+
+  <resource-bundle>messages.StageOtherFilesBundle</resource-bundle>
+
+  <actions>
+    <action id="StageOtherFiles.Stage" class="io.github.yendrrek.stageotherfiles.StageOtherFilesAction">
+      <add-to-group group-id="Git.Stage.Tree.Menu" anchor="after" relative-to-action="Git.Stage.Add"/>
+    </action>
+  </actions>
 </idea-plugin>
