@@ -27,7 +27,7 @@ An unfiltered `./gradlew verifyPlugin` downloads every IDE in the range, about 4
 - Never omit a defaulted argument when calling a `com.intellij` or `git4idea` Kotlin function or
   constructor, for example `GitFileStatus(index, workTree, path, origPath)`. The synthetic
   `$default` member it compiles to changes shape between IDE versions and throws
-  `NoSuchMethodError`.
+  `NoSuchMethodError`. `PlatformDefaultArgumentCallsTest` enforces this.
 - Never call a Kotlin-`internal` git4idea member (name-mangled, or refused by the compiler), such as
   `GitStageTracker.State.fileStatusNodes` or `isStagingAreaAvailable`.
 - No `@ApiStatus.Internal` platform API. `acceptedInternalApiUsages` in `build.gradle.kts` stays

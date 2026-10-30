@@ -43,6 +43,10 @@ dependencies {
         zipSigner()
         testFramework(TestFrameworkType.Platform)
     }
+
+    // The platform test framework is built on JUnit 4 and throws opentest4j assertion errors.
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.opentest4j:opentest4j:1.3.0")
 }
 
 kotlin {
