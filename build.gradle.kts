@@ -33,10 +33,10 @@ sourceSets {
     create("uiTest")
 }
 
-val uiTestImplementation by configurations.getting {
+configurations.named("uiTestImplementation") {
     extendsFrom(configurations.testImplementation.get())
 }
-configurations.getByName("uiTestRuntimeOnly") {
+configurations.named("uiTestRuntimeOnly") {
     extendsFrom(configurations.testRuntimeOnly.get())
 }
 
@@ -69,12 +69,12 @@ dependencies {
 
     // kotlin.stdlib.default.dependency=false removes the stdlib everywhere; uiTest does not get the
     // platform's copy, so it needs its own.
-    uiTestImplementation(kotlin("stdlib"))
-    uiTestImplementation("com.intellij.remoterobot:remote-robot:$remoteRobotVersion")
-    uiTestImplementation("com.intellij.remoterobot:remote-fixtures:$remoteRobotVersion")
+    "uiTestImplementation"(kotlin("stdlib"))
+    "uiTestImplementation"("com.intellij.remoterobot:remote-robot:$remoteRobotVersion")
+    "uiTestImplementation"("com.intellij.remoterobot:remote-fixtures:$remoteRobotVersion")
     // RemoteRobot's constructor takes an OkHttpClient, which remote-robot only puts on the runtime
     // classpath. Same version as remote-robot's own dependency.
-    uiTestImplementation("com.squareup.okhttp3:okhttp:3.14.9")
+    "uiTestImplementation"("com.squareup.okhttp3:okhttp:3.14.9")
 }
 
 kotlin {
