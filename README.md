@@ -8,6 +8,7 @@ area.
 Requires JDK 21; Gradle downloads it if none is installed.
 
 ```bash
-./gradlew build    # compile and test
-./gradlew runIde   # sandbox IDE with the plugin installed
+./gradlew build         # compile and test
+./gradlew buildPlugin   # plugin zip in build/distributions/
+./gradlew runIde        # sandbox IDE with the plugin installed
 ```
