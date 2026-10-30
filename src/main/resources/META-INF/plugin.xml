@@ -11,12 +11,13 @@
     </p>
     <p>
       Right-click one or more files in the staging area and choose <b>Stage Other Files</b> to stage
-      every other modified tracked file. The selected files stay unstaged.
+      every other modified or unversioned file. The selected files stay unstaged.
     </p>
     <ul>
       <li>Selecting a folder keeps every file under it unstaged.</li>
       <li>A partially staged file whose unstaged entry is selected keeps its unstaged changes.</li>
-      <li>Unversioned files, listed in red under Unstaged, and conflicted files are never staged.</li>
+      <li>Unversioned files are staged like modified ones, as <b>Stage All</b> does.</li>
+      <li>Conflicted and ignored files are never staged.</li>
       <li>Files are staged in every Git repository shown in the staging area.</li>
     </ul>
     <p>Free and open source under the MIT License.</p>

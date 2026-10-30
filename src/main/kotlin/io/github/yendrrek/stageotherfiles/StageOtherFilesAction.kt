@@ -53,7 +53,7 @@ class StageOtherFilesAction : DumbAwareAction() {
         )
 
     private companion object {
-        // Tracked files only, matching the toolbar's Stage All Tracked.
-        val OTHER_KINDS: Set<NodeKind> = EnumSet.of(NodeKind.UNSTAGED)
+        // Modified and unversioned files, matching the toolbar's Stage All.
+        val OTHER_KINDS: Set<NodeKind> = EnumSet.of(NodeKind.UNSTAGED, NodeKind.UNTRACKED)
     }
 }

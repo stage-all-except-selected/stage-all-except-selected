@@ -15,9 +15,9 @@ area.
 2. In the **Commit** tool window, select one or more unstaged files or folders.
 3. Right-click and choose **Stage Other Files**, directly below **Stage**.
 
-Every other modified tracked file, in every Git repository of the project, is staged. The selected
-files stay unstaged, including the unstaged changes of a partially staged file. Unversioned files,
-listed in red under Unstaged, and conflicted files are never staged.
+Every other modified or unversioned file, in every Git repository of the project, is staged, as
+**Stage All** would. The selected files stay unstaged, including the unstaged changes of a partially
+staged file. Conflicted and ignored files are never staged.
 
 Works in IntelliJ IDEA 2024.2 and later, and in every other IntelliJ-based IDE that bundles Git.
 

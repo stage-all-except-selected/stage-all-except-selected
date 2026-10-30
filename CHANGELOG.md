@@ -4,5 +4,5 @@
 
 ### Added
 
-- **Stage Other Files** in the Git staging area's context menu: stages every unstaged tracked file
-  except the selected ones, across all Git repositories of the project.
+- **Stage Other Files** in the Git staging area's context menu: stages every modified or unversioned
+  file except the selected ones, across all Git repositories of the project.

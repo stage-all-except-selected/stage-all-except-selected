@@ -105,7 +105,7 @@ class StageOtherFilesUiTest {
     }
 
     @Test
-    fun `unversioned files are left alone`() {
+    fun `unversioned files are staged too`() {
         modify(root, "a.txt", "b.txt")
         root.write("new.txt", "new\n")
         sandbox.awaitPanelMatchesGit()
@@ -113,7 +113,21 @@ class StageOtherFilesUiTest {
         panel.select(UNSTAGED, "a.txt")
         panel.rightClick(UNSTAGED, "a.txt").click(ITEM)
 
-        awaitStatus(root, "a.txt" to " M", "b.txt" to "M ", "new.txt" to "??")
+        awaitStatus(root, "a.txt" to " M", "b.txt" to "M ", "new.txt" to "A ")
+        sandbox.awaitPanelMatchesGit()
+    }
+
+    @Test
+    fun `a selected unversioned file stays unversioned`() {
+        modify(root, "a.txt")
+        root.write("new-kept.txt", "kept\n")
+        root.write("new-staged.txt", "staged\n")
+        sandbox.awaitPanelMatchesGit()
+
+        panel.select(UNSTAGED, "new-kept.txt")
+        panel.rightClick(UNSTAGED, "new-kept.txt").click(ITEM)
+
+        awaitStatus(root, "a.txt" to "M ", "new-kept.txt" to "??", "new-staged.txt" to "A ")
         sandbox.awaitPanelMatchesGit()
     }
 
