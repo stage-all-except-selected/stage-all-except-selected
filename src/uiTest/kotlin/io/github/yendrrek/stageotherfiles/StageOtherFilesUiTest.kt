@@ -20,7 +20,7 @@ class StageOtherFilesUiTest {
     val sandbox = SandboxIdeRule()
 
     private val root get() = sandbox.root
-    private val second get() = sandbox.second
+    private val nested get() = sandbox.nested
     private val panel get() = sandbox.panel
 
     @Test
@@ -120,13 +120,13 @@ class StageOtherFilesUiTest {
     @Test
     fun `files in both repositories are staged`() {
         modify(root, "a.txt", "b.txt")
-        modify(second, "in-second-1.txt", "in-second-2.txt")
+        modify(nested, "in-nested-1.txt", "in-nested-2.txt")
 
         panel.select(UNSTAGED, "a.txt")
         panel.rightClick(UNSTAGED, "a.txt").click(ITEM)
 
         awaitStatus(root, "a.txt" to " M", "b.txt" to "M ")
-        awaitStatus(second, "in-second-1.txt" to "M ", "in-second-2.txt" to "M ")
+        awaitStatus(nested, "in-nested-1.txt" to "M ", "in-nested-2.txt" to "M ")
         sandbox.awaitPanelMatchesGit()
     }
 

@@ -63,6 +63,78 @@ class SandboxIde(private val robot: RemoteRobot) {
         )
     }
 
+    /** Opens [path] in an editor tab, as double-clicking it would. */
+    fun openFile(path: String) {
+        onEdt(
+            beforeEdt = """
+            var file = com.intellij.openapi.vfs.LocalFileSystem.getInstance()
+                .refreshAndFindFileByPath(project.getBasePath() + '/$path')
+            """,
+            body = "com.intellij.openapi.fileEditor.FileEditorManager.getInstance(project).openFile(file, true)",
+        )
+    }
+
+    /** Switches to the installed theme named [name], as Settings | Appearance does; returns the previous one. */
+    fun setTheme(name: String): String = robot.callJs(
+        """
+        $PRELUDE
+        var laf = com.intellij.ide.ui.LafManager.getInstance()
+        var previous = '' + laf.getCurrentUIThemeLookAndFeel().getName()
+        var target = null
+        var themes = laf.getInstalledThemes().iterator()
+        while (themes.hasNext()) {
+            var theme = themes.next()
+            if (theme.getName() == '${name.escapeJs()}') target = theme
+        }
+        if (target == null) throw 'no installed theme named ${name.escapeJs()}'
+        com.intellij.openapi.application.ApplicationManager.getApplication().invokeAndWait(new java.lang.Runnable({
+            run: function() {
+                laf.setCurrentLookAndFeel(target, false)
+                laf.updateUI()
+            }
+        }), com.intellij.openapi.application.ModalityState.nonModal())
+        previous
+        """,
+        false,
+    )
+
+    /**
+     * Sizes the IDE frame so the part below its main toolbar is [width] by [height] logical pixels,
+     * at the top-left of the screen.
+     */
+    fun sizeFrameBelowToolbar(width: Int, height: Int) {
+        onEdt(
+            """
+            var frame = com.intellij.openapi.wm.WindowManager.getInstance().getFrame(project)
+            var top = $TOOLBAR_BOTTOM
+            frame.setExtendedState(java.awt.Frame.NORMAL)
+            frame.setBounds(0, 0, $width, top + $height)
+            frame.validate()
+            """,
+        )
+    }
+
+    /**
+     * The frame below its main toolbar, [width] by [height] logical pixels, captured from the screen
+     * at full device resolution, as PNG bytes. The sandbox runs on X11, where a screen capture
+     * cannot block the way it does through a Wayland portal.
+     */
+    fun captureBelowToolbar(width: Int, height: Int): ByteArray = robot.callJs(
+        """
+        $PRELUDE
+        var frame = com.intellij.openapi.wm.WindowManager.getInstance().getFrame(project)
+        var top = $TOOLBAR_BOTTOM
+        var at = frame.getLocationOnScreen()
+        var area = new java.awt.Rectangle(at.x, at.y + top, $width, $height)
+        var variants = new java.awt.Robot().createMultiResolutionScreenCapture(area).getResolutionVariants()
+        var sharpest = variants.get(variants.size() - 1)
+        var bytes = new java.io.ByteArrayOutputStream()
+        javax.imageio.ImageIO.write(sharpest, 'png', bytes)
+        bytes.toByteArray()
+        """,
+        false,
+    )
+
     fun hasUnsavedDocuments(): Boolean = robot.callJs(
         "com.intellij.openapi.fileEditor.FileDocumentManager.getInstance().getUnsavedDocuments().length > 0",
         true,
@@ -223,6 +295,13 @@ class SandboxIde(private val robot: RemoteRobot) {
         const val PLUGIN_ID = "io.github.yendrrek.stageotherfiles"
         const val ACTION_ID = "StageOtherFiles.Stage"
         const val DESCRIPTOR_KEY = "uiTest.unloadedDescriptor"
+
+        /** JavaScript expression: the y of the main toolbar's bottom edge within `frame`. */
+        const val TOOLBAR_BOTTOM = """(function() {
+                var type = java.lang.Class.forName('com.intellij.openapi.wm.impl.headertoolbar.MainToolbar', false, frame.getClass().getClassLoader())
+                var toolbar = com.intellij.util.ui.UIUtil.findComponentOfType(frame.getRootPane(), type)
+                return javax.swing.SwingUtilities.convertPoint(toolbar, 0, toolbar.getHeight(), frame).y
+            })()"""
 
         /**
          * `project` is the one open project; `gitClass` loads a git4idea staging class. From 2026.2

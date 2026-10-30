@@ -26,7 +26,7 @@ version = pluginVersion
 val remoteRobotVersion = "0.11.23"
 
 // The throwaway project the UI-test IDE opens: two Git roots, rebuilt on every launch.
-val uiTestProjectDir = layout.buildDirectory.dir("ui-test-project")
+val uiTestProjectDir = layout.buildDirectory.dir("inventory-service")
 
 sourceSets {
     // Slow, needs a live IDE started separately; never part of `./gradlew test`.
@@ -179,6 +179,10 @@ tasks {
         testClassesDirs = sourceSets["uiTest"].output.classesDirs
         classpath = sourceSets["uiTest"].runtimeClasspath
         systemProperty("uiTest.projectDir", uiTestProjectDir.get().asFile.absolutePath)
+        // -PuiTestScreenshotDir=<dir> runs MarketplaceScreenshotsUiTest, which writes there.
+        providers.gradleProperty("uiTestScreenshotDir").orNull?.let {
+            systemProperty("uiTest.screenshotDir", file(it).absolutePath)
+        }
         // Reruns against whatever state the running IDE is in; there is no meaningful up-to-date.
         outputs.upToDateWhen { false }
         // remote-robot's Gson parsing reflects into Throwable; without this every failure surfaces
@@ -189,7 +193,7 @@ tasks {
 
 /**
  * Rebuilds the UI-test project from `src/uiTest/fixture-project`: a Git repository at the project
- * root and a second one in `second/`, both mapped in `.idea/vcs.xml`. The tests reset the working
+ * root and a second one in `shared-config/`, both mapped in `.idea/vcs.xml`. The tests reset the working
  * trees themselves; the repositories only need to exist before the IDE opens the project.
  */
 val prepareUiTestProject = tasks.register("prepareUiTestProject") {
@@ -211,7 +215,7 @@ val prepareUiTestProject = tasks.register("prepareUiTestProject") {
         val projectDir = target.get()
         projectDir.deleteRecursively()
         template.copyRecursively(projectDir)
-        for (root in listOf(projectDir, projectDir.resolve("second"))) {
+        for (root in listOf(projectDir, projectDir.resolve("shared-config"))) {
             root.mkdirs()
             git(root, "init", "--quiet", "--initial-branch=main")
             git(root, "config", "user.name", "UI Test")
@@ -220,7 +224,7 @@ val prepareUiTestProject = tasks.register("prepareUiTestProject") {
             git(root, "commit", "--quiet", "--allow-empty", "--message=Initial commit")
         }
         // The IDE's own files and the nested repository are not part of the root repository.
-        projectDir.resolve(".git/info/exclude").appendText("/.idea/\n/ui-test-project.iml\n/second/\n")
+        projectDir.resolve(".git/info/exclude").appendText("/.idea/\n/inventory-service.iml\n/shared-config/\n")
     }
 }
 
@@ -343,6 +347,11 @@ intellijPlatformTesting {
             dependsOn(prepareUiTestProject)
             args(uiTestProjectDir.get().asFile.absolutePath)
             jvmArgumentProviders += CommandLineArgumentProvider { uiTestIdeArgs }
+            // -PuiTestUiScale=2 renders the IDE at twice the pixel density, for sharp screenshots.
+            val uiScale = providers.gradleProperty("uiTestUiScale")
+            jvmArgumentProviders += CommandLineArgumentProvider {
+                listOfNotNull(uiScale.orNull?.let { "-Dsun.java2d.uiScale=$it" })
+            }
             // java.awt.Robot cannot reach a native Wayland window. An empty WAYLAND_DISPLAY makes
             // the JBR resolve awt.toolkit.name=auto to X11 and open the IDE on DISPLAY. Unsetting it
             // is not enough: the JBR then falls back to $XDG_RUNTIME_DIR/wayland-0.

@@ -24,7 +24,7 @@ class SandboxIdeRule : TestRule {
         System.getProperty("uiTest.projectDir") ?: error("uiTest.projectDir is not set; run through ./gradlew uiTest"),
     )
     val root = FixtureRepository(projectDir)
-    val second = FixtureRepository(projectDir.resolve("second"))
+    val nested = FixtureRepository(projectDir.resolve("shared-config"))
 
     override fun apply(base: Statement, description: Description): Statement = object : Statement() {
         override fun evaluate() {
@@ -46,7 +46,7 @@ class SandboxIdeRule : TestRule {
     /** Refreshes the IDE from disk and waits until the staging area shows what `git status` says. */
     fun awaitPanelMatchesGit() {
         ide.refreshFromDisk()
-        panel.waitUntilShows(expectedPanel(root, second))
+        panel.waitUntilShows(expectedPanel(root, nested))
     }
 
     private fun resetIde() {
@@ -56,7 +56,7 @@ class SandboxIdeRule : TestRule {
         ide.closeAllEditors()
         ide.setStagingAreaEnabled(true)
         root.reset()
-        second.reset()
+        nested.reset()
         ide.showCommitToolWindow()
         awaitPanelMatchesGit()
     }

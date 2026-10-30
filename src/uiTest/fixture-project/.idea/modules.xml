@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/ui-test-project.iml" filepath="$PROJECT_DIR$/ui-test-project.iml" />
+      <module fileurl="file://$PROJECT_DIR$/inventory-service.iml" filepath="$PROJECT_DIR$/inventory-service.iml" />
     </modules>
   </component>
 </project>

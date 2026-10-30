@@ -6,6 +6,7 @@ import com.intellij.remoterobot.fixtures.JTreeFixture
 import com.intellij.remoterobot.search.locators.byXpath
 import com.intellij.remoterobot.utils.Keyboard
 import com.intellij.remoterobot.utils.waitFor
+import java.awt.Point
 import java.awt.event.KeyEvent
 import java.time.Duration
 
@@ -51,6 +52,37 @@ class StagingAreaPanel(private val robot: RemoteRobot) {
     fun rightClick(section: String, name: String): ContextMenu {
         tree.rightClickRow(row(section, name))
         return ContextMenu(robot)
+    }
+
+    /**
+     * Right-clicks the far end of [name]'s row in [section], which selects it like a click on its
+     * text, so the menu opens beside the tree instead of over its other rows.
+     */
+    fun rightClickRowEnd(section: String, name: String): ContextMenu {
+        val tree = tree
+        val point = tree.callJs<Point>(
+            """
+            var bounds = component.getRowBounds(${row(section, name)})
+            var visible = component.getVisibleRect()
+            new java.awt.Point(visible.x + visible.width - 24, bounds.y + Math.floor(bounds.height / 2))
+            """,
+            true,
+        )
+        tree.rightClick(point)
+        return ContextMenu(robot)
+    }
+
+    /** Parks the pointer in the empty space under the tree's rows, where it highlights nothing. */
+    fun movePointerAway() {
+        val tree = tree
+        val point = tree.callJs<Point>(
+            """
+            var visible = component.getVisibleRect()
+            new java.awt.Point(visible.x + 24, visible.y + visible.height - 24)
+            """,
+            true,
+        )
+        tree.moveMouse(point)
     }
 
     private fun row(section: String, name: String): Int {

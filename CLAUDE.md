@@ -21,7 +21,8 @@ An unfiltered `./gradlew verifyPlugin` downloads every IDE in the range, about 4
 
 `src/uiTest` drives a sandbox IDE through remote-robot: it changes files with the `git` CLI, clicks
 through the staging area and checks the result with `git status`. Each launch rebuilds
-`build/ui-test-project`, a project with a Git repository at its root and another in `second/`.
+`build/inventory-service`, a project with a Git repository at its root and another in
+`shared-config/`.
 
 ```bash
 Xvfb :99 -screen 0 1920x1080x24 &
@@ -35,6 +36,21 @@ DISPLAY=:99 ./gradlew runIdeForUiTests &   # IntelliJ IDEA 2024.2.6, robot-serve
   empty `WAYLAND_DISPLAY` so the JBR picks X11 and opens on `DISPLAY`.
 - A failing test saves a screenshot to `build/reports/uiTest/<test>.png`. A test also fails when the
   plugin logs an error to `idea.log`.
+
+## Capture the Marketplace screenshots
+
+`MarketplaceScreenshotsUiTest` writes `marketplace/screenshots/`: the context menu and the result,
+in Islands Light and Islands Dark, each 1280 x 800 at twice the pixel density. It runs only when
+given an output directory, on the newest IDE, rendered at 2x:
+
+```bash
+Xvfb :99 -screen 0 2880x1800x24 &
+DISPLAY=:99 ./gradlew runIdeForUiTestsLatest -PuiTestUiScale=2 &
+./gradlew uiTest --tests '*MarketplaceScreenshotsUiTest' -PuiTestScreenshotDir=marketplace/screenshots
+```
+
+Each image is the frame below the main toolbar, which leaves out the free tier's "Unlock Ultimate"
+button; toolbar customisation does not remove it.
 
 ## Compatibility rules
 

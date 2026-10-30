@@ -10,7 +10,7 @@ class FixtureRepository(val dir: File) {
         if (dir.resolve(".git/MERGE_HEAD").exists()) git("merge", "--abort")
         git("checkout", "--quiet", "--force", "main")
         git("reset", "--quiet", "--hard", git("rev-list", "--max-parents=0", "HEAD").trim())
-        // Without -x, so the excluded .idea/ and the nested second/ repository survive.
+        // Without -x, so the excluded .idea/ and the nested shared-config/ repository survive.
         git("clean", "--quiet", "-fd")
         git("for-each-ref", "--format=%(refname:short)", "refs/heads/").lines()
             .filter { it.isNotBlank() && it != "main" }

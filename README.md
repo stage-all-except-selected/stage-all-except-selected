@@ -3,6 +3,11 @@
 JetBrains IDE plugin that stages every unstaged file except the ones you select in the Git staging
 area.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="marketplace/screenshots/context-menu-dark.png">
+  <img alt="Stage Other Files in the staging area's context menu" src="marketplace/screenshots/context-menu-light.png">
+</picture>
+
 ## Use
 
 1. Enable the staging area, which is off by default: **Settings | Version Control | Git | Enable
