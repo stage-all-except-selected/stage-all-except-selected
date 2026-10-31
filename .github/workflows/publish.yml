@@ -1,0 +1,72 @@
+name: Publish
+
+# Deliberately separate from build.yml's push/pull_request triggers: publishing to Marketplace is
+# a release action, not a CI check, so it only fires when you push a version tag (e.g. `v1.4.5`)
+# after you've done your usual cross-platform pass — push to GitHub, pull on the Windows and Mac
+# machines, run the UI tests / manual check there. This workflow doesn't try to replicate that; it
+# only packages and uploads what you've already verified by hand.
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  # Re-verify here rather than trusting build.yml's last run: tag pushes don't necessarily
+  # correspond to a commit that workflow has already checked (tags aren't branches), so this is the
+  # safety net that guarantees a verified build is what gets signed. The shared workflow runs one
+  # job per IDE; a single verifyPlugin job runs out of disk on a hosted runner.
+  verify-plugin:
+    uses: ./.github/workflows/verify-plugin.yml
+
+  publish:
+    needs: verify-plugin
+    runs-on: ubuntu-latest
+    # A signed plugin ZIP is the same bytes regardless of which OS built it, so a single Linux
+    # runner is correct here — no matrix needed, unlike build.yml's cross-platform `build` job.
+    #
+    # No environment-based approval gate. The gate is the tag push itself: push a `v*` tag only
+    # after the manual cross-platform pass is done, and keep tag pushes out of any automated flow.
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          # Basic caching is MIT-licensed and free for private repositories. The default,
+          # enhanced caching, is proprietary and needs Gradle's Terms of Use accepted (see
+          # DISTRIBUTION.md in gradle/actions).
+          cache-provider: basic
+      # Re-run build (compile and unit tests) for the same reason the verify-plugin job above
+      # re-verifies: a tag may point at a commit build.yml never checked.
+      - run: ./gradlew build
+        shell: bash
+      # signPlugin skips itself, and still succeeds, when CERTIFICATE_CHAIN or PRIVATE_KEY is
+      # empty, and publishPlugin would then upload an unsigned zip. Fail before either runs.
+      - name: Check release secrets
+        shell: bash
+        env:
+          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+        run: |
+          missing=0
+          for name in CERTIFICATE_CHAIN PRIVATE_KEY PRIVATE_KEY_PASSWORD PUBLISH_TOKEN; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Repository secret $name is empty or not set"
+              missing=1
+            fi
+          done
+          exit "$missing"
+      - run: ./gradlew signPlugin
+        shell: bash
+        env:
+          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+      - run: ./gradlew publishPlugin
+        shell: bash
+        env:
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}

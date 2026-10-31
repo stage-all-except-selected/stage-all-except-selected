@@ -1,0 +1,50 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Cross-platform matrix: `build` (compile + the plain-JUnit `test` suite) is pure JVM/Swing
+    # code with no native or OS-specific paths, so this is what actually proves the plugin's logic
+    # behaves the same on macOS and Windows, not just Linux. It deliberately does NOT cover
+    # `uiTest` (the remote-robot suite) — that drives a real java.awt.Robot against a real desktop
+    # session, which none of these runners provide identically (even on Linux it needs an X11 display,
+    # not Wayland). Windows has a manual-trigger-only workflow for that instead (`ui-tests.yml`); macOS
+    # remains a manual pass on real hardware, because hosted macOS runners cannot grant remote-robot the
+    # Screen Recording and Accessibility permissions it needs (see the comment in `ui-tests.yml`).
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          # Basic caching is MIT-licensed and free for private repositories. The default,
+          # enhanced caching, is proprietary and needs Gradle's Terms of Use accepted (see
+          # DISTRIBUTION.md in gradle/actions).
+          cache-provider: basic
+      # `windows-latest`'s default `run:` shell is PowerShell, which cannot execute `./gradlew`
+      # (a POSIX shell script) — `shell: bash` forces Git Bash, preinstalled on that runner, so
+      # the same invocation works unmodified on all three OSes.
+      - run: ./gradlew build
+        shell: bash
+      # The basic cache provider archives ~/.gradle/caches after the last step. On Windows that
+      # failed with "Device or resource busy" on Gradle's .lock files while the daemon was still
+      # running, so no cache was ever saved. Stopping it first lets the archive complete.
+      - name: Stop the Gradle daemon
+        if: always()
+        run: ./gradlew --stop
+        shell: bash
+
+  verify-plugin:
+    uses: ./.github/workflows/verify-plugin.yml

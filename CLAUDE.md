@@ -66,6 +66,17 @@ CERTIFICATE_CHAIN="$(cat chain.crt)" PRIVATE_KEY="$(cat private_encrypted.pem)" 
   PRIVATE_KEY_PASSWORD=... ./gradlew verifyPluginSignature   # signs, then verifies
 ```
 
+## CI
+
+| Workflow | Trigger | Does |
+|---|---|---|
+| `build.yml` | Push to `master`, pull request, manual | `./gradlew build` on Linux, macOS and Windows; calls `verify-plugin.yml` |
+| `verify-plugin.yml` | Called by the other two | One `verifyPlugin` job per IDE listed by `printProductsReleases` |
+| `publish.yml` | Push of a `v*` tag | Verify, build, check secrets, `signPlugin`, `publishPlugin` |
+
+`publish.yml` needs the repository secrets `CERTIFICATE_CHAIN`, `PRIVATE_KEY`,
+`PRIVATE_KEY_PASSWORD` and `PUBLISH_TOKEN`, and fails before signing if one is empty.
+
 ## Compatibility rules
 
 - Compile against the oldest supported IDE (`platformVersion` in `gradle.properties`). Keep
