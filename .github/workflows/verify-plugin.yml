@@ -1,0 +1,90 @@
+name: Verify plugin
+
+# The Plugin Verifier run, shared by build.yml (every push and pull request) and publish.yml (before
+# a release is signed). One reusable workflow keeps the per-IDE split below in a single place.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  ides:
+    name: list IDEs
+    # Lists the IDE releases the verify matrix below runs against, from the same selection a
+    # local `./gradlew verifyPlugin` uses (verifiedIdeType in build.gradle.kts), so a new IntelliJ
+    # release is picked up without editing this file. Only the release feed is read; nothing large
+    # is downloaded.
+    runs-on: ubuntu-latest
+    outputs:
+      ides: ${{ steps.list.outputs.ides }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          # Basic caching is MIT-licensed and free for private repositories. The default,
+          # enhanced caching, is proprietary and needs Gradle's Terms of Use accepted (see
+          # DISTRIBUTION.md in gradle/actions).
+          cache-provider: basic
+          # Restore only, never save. This job finishes first, and a cache entry cannot be replaced
+          # once it exists, so its small entry (just the Gradle plugins) would shadow the fuller one
+          # build.yml's ubuntu job needs: they share a key, since it depends only on the build files.
+          cache-read-only: true
+      - id: list
+        # Fail rather than hand the matrix an empty list: that would skip verification entirely
+        # and still leave the build green.
+        run: |
+          ides=$(./gradlew printProductsReleases -q --console=plain | sed -n 's/^IU-//p' | jq -R . | jq -cs .)
+          echo "IDEs to verify: $ides"
+          if [ "$ides" = "[]" ]; then
+            echo "::error::printProductsReleases listed no IDEs, so there is nothing to verify against."
+            exit 1
+          fi
+          echo "ides=$ides" >> "$GITHUB_OUTPUT"
+
+  verify:
+    # verifyPlugin is a static bytecode/API-compatibility check against downloaded IDE
+    # distributions — its result cannot vary by host OS, so it runs on Linux only, not in build.yml's
+    # three-OS matrix (tripling an OS-independent check would only burn CI minutes).
+    #
+    # One job per IDE release, as listed by the ides job. All of them in one job need
+    # roughly 45-50 GB of downloads and extracted installs, and a hosted runner has about 14 GB
+    # free (36 GB after the step below), so a single job dies with "No space left on device" and
+    # leaves no log. Split, each job holds one IDE and a failure names the IDE that broke.
+    needs: ides
+    strategy:
+      fail-fast: false
+      matrix:
+        ide: ${{ fromJSON(needs.ides.outputs.ides) }}
+    name: ${{ matrix.ide }}
+    runs-on: ubuntu-latest
+    steps:
+      # Kept as headroom: a single recent IDE is still several GB extracted, next to its archive.
+      # The JDK is untouched because setup-java installs its own.
+      - name: Free disk space
+        run: |
+          df -h /
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup \
+            /opt/hostedtoolcache/CodeQL
+          df -h /
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          # Basic caching is MIT-licensed and free for private repositories. The default,
+          # enhanced caching, is proprietary and needs Gradle's Terms of Use accepted (see
+          # DISTRIBUTION.md in gradle/actions).
+          cache-provider: basic
+          # Restore the shared dependency cache but never save one. The basic provider keys only
+          # on the build files, so every job on this OS shares one entry, and a verify job would
+          # save its multi-gigabyte IDE into it. That would crowd the repository's 10 GB cache
+          # quota and hand the other jobs an IDE they do not use.
+          cache-read-only: true
+      - run: ./gradlew verifyPlugin -PverifyIde=${{ matrix.ide }}

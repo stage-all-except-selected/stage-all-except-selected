@@ -1,1 +1,9 @@
 /docs/
+.DS_Store
+.gradle
+.idea
+.intellijPlatform
+.kotlin
+build
+# The UI-test fixture project's IDE configuration is part of the test.
+!/src/uiTest/fixture-project/.idea/

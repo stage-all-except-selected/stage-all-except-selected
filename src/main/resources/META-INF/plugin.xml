@@ -1,0 +1,40 @@
+<idea-plugin>
+  <!-- Permanent once uploaded to JetBrains Marketplace: the listing and every update are keyed to it. -->
+  <id>io.stageallexceptselected</id>
+  <name>Stage All Except Selected</name>
+  <vendor email="yendrrek@protonmail.com" url="https://github.com/stage-all-except-selected">Andrzej Piontek</vendor>
+
+  <description><![CDATA[
+    <p>
+      Requires the Git staging area, which is off by default: enable it in
+      <b>Settings | Version Control | Git | Enable staging area</b>.
+    </p>
+    <p>
+      Right-click one or more files in the staging area and choose <b>Stage All Except Selected</b>
+      to stage every other modified or unversioned file. The selected files stay unstaged.
+    </p>
+    <ul>
+      <li>Selecting a folder keeps every file under it unstaged.</li>
+      <li>A partially staged file whose unstaged entry is selected keeps its unstaged changes.</li>
+      <li>Unversioned files are staged like modified ones, as <b>Stage All</b> does.</li>
+      <li>Conflicted and ignored files are never staged.</li>
+      <li>Files are staged in every Git repository shown in the staging area.</li>
+    </ul>
+    <p>
+      Free and open source under the MIT License. Source code and the issue tracker are on
+      <a href="https://github.com/stage-all-except-selected/stage-all-except-selected">GitHub</a>.
+    </p>
+  ]]></description>
+
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.vcs</depends>
+  <depends>Git4Idea</depends>
+
+  <resource-bundle>messages.StageAllExceptSelectedBundle</resource-bundle>
+
+  <actions>
+    <action id="StageAllExceptSelected.Stage" class="io.stageallexceptselected.StageAllExceptSelectedAction">
+      <add-to-group group-id="Git.Stage.Tree.Menu" anchor="after" relative-to-action="Git.Stage.Add"/>
+    </action>
+  </actions>
+</idea-plugin>
