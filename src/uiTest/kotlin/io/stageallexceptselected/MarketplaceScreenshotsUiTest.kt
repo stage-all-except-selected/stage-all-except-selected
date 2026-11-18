@@ -14,6 +14,9 @@ import java.time.Duration
  * Runs only with `-PuiTestScreenshotDir=<dir>`, against `runIdeForUiTestsLatest -PuiTestUiScale=2`
  * on a 2880x1800 Xvfb screen. Each image is the frame below its main toolbar, 1280 x 800 logical
  * pixels, the size Marketplace recommends.
+ *
+ * The frame starts below the main toolbar because the free tier's "Unlock Ultimate" button sits in
+ * it and toolbar customisation does not remove it.
  */
 class MarketplaceScreenshotsUiTest {
 
